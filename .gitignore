@@ -1,0 +1,6 @@
+subprojects
+
+**/.cache
+**/.vs
+**/build
+**/builddir
