@@ -32,8 +32,8 @@ moduleconfig = get_option('moduleconfig')
 configure_file(
   input: moduleconfig,
   command: [
-    meson.project_source_root() + '/subprojects/luajit/src/luajit', 
-    meson.project_source_root() + '/subprojects/evol/buildscripts/bin2cstring.lua', 
+    meson.source_root() + '/subprojects/luajit/src/luajit', 
+    meson.source_root() + '/subprojects/evol/buildscripts/bin2cstring.lua', 
     meson.project_source_root() + '/' + moduleconfig
   ],
   output: moduleconfig + '.h',
