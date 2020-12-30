@@ -1,1 +1,1 @@
-# evolmod-template
+# evol-mod-glfw

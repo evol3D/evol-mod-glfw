@@ -1,9 +1,13 @@
-project('template', 'c',
+project('evol-mod-glfw', 'c',
 version : '0.1',
 default_options : ['warning_level=3'])
 
+cmake = import('cmake')
+
+cc = meson.get_compiler('c')
+
 mod_src = [
-  'src/template.c'
+  'src/mod.c'
 ]
 
 mod_incdir = [
@@ -13,8 +17,15 @@ mod_incdir = [
 evol_sub = subproject('evol', default_options: ['build_demo=false'])
 evolmod_dep = evol_sub.get_variable('evolmod_dep')
 
+glfw_proj = cmake.subproject('glfw')
+glfw_dep = glfw_proj.dependency('glfw')
+
+dl_dep = cc.find_library('dl', required: false)
+
 mod_deps = [
   evolmod_dep,
+  glfw_dep,
+  dl_dep,
 ]
 
 moduleconfig = get_option('moduleconfig')
@@ -30,7 +41,7 @@ configure_file(
 )
 
 module = shared_library(
-  'template', mod_src,
+  'evmodglfw', mod_src,
   include_directories: mod_incdir,
   dependencies: mod_deps,
 )
