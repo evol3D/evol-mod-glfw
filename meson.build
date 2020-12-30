@@ -11,7 +11,6 @@ mod_src = [
 ]
 
 mod_incdir = [
-  'include'
 ]
 
 evol_sub = subproject('evol', default_options: ['build_demo=false'])
