@@ -45,5 +45,10 @@ module = shared_library(
   dependencies: mod_deps,
 )
 
+mod_dep = declare_dependency(
+  link_with: module,
+)
 
-
+if meson.version().version_compare('>= 0.54.0')
+  meson.override_dependency('evmod_glfw', mod_dep)
+endif
