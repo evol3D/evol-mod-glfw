@@ -33,44 +33,55 @@ EV_CONSTRUCTOR {
   WindowData.created = false;
 }
 
-EV_START {
+EV_EXPORT bool createWindow()
+{
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-
   WindowData.windowHandle = glfwCreateWindow(WindowData.width, WindowData.height, WindowData.windowTitle, NULL, NULL);
-  assert(WindowData.windowHandle);
 
-  WindowData.created = true;
+  return WindowData.windowHandle != NULL;
+}
 
+EV_EXPORT void windowLoop()
+{
   while(!glfwWindowShouldClose(WindowData.windowHandle)) {
     glfwPollEvents();
   }
 }
 
+EV_START {
+  if(createWindow()) {
+    WindowData.created = true;
+    windowLoop();
+  }
+}
+
 EV_DESTRUCTOR {
-  glfwDestroyWindow(WindowData.windowHandle);
+  if(WindowData.windowHandle) {
+    glfwDestroyWindow(WindowData.windowHandle);
+  }
   glfwTerminate();
 }
 
-void updateWindowSize()
+void _updateWindowSize()
 {
   glfwSetWindowSize(WindowData.windowHandle, WindowData.width, WindowData.height);
 }
 
-EV_EXPORT void PF_setWindowHeight(uint32_t height)
+EV_EXPORT void setWindowHeight(uint32_t height)
 {
   WindowData.height = height;
-  updateWindowSize();
+  _updateWindowSize();
 }
 
-EV_EXPORT void PF_setWindowWidth(uint32_t width)
+EV_EXPORT void setWindowWidth(uint32_t width)
 {
   WindowData.width = width;
-  updateWindowSize();
+  _updateWindowSize();
 }
 
-EV_EXPORT void PF_setWindowSize(uint32_t width, uint32_t height)
+EV_EXPORT void setWindowSize(uint32_t width, uint32_t height)
 {
   WindowData.width = width;
   WindowData.height = height;
-  updateWindowSize();
+  _updateWindowSize();
 }
