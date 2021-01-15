@@ -4,3 +4,6 @@ subprojects
 **/.vs
 **/build
 **/builddir
+**/.clangd
+
+**/compile_commands.json
