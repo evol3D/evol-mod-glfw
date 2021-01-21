@@ -39,7 +39,7 @@ configure_file(
   capture: true
 )
 
-module = shared_library(
+module = shared_module(
   'evmodglfw', mod_src,
   include_directories: mod_incdir,
   dependencies: mod_deps,
