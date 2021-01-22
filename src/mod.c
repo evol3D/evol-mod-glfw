@@ -1,3 +1,6 @@
+#include "evol/common/ev_types.h"
+#include "evol/core/evol.h"
+#include "evol/core/evstore.h"
 #define EV_MODULE_DEFINE
 #include <evol/evolmod.h>
 
@@ -11,8 +14,11 @@
 #define DEFAULT_WINDOW_TITLE "Hello Window!"
 
 #include <stdbool.h>
+#include <stdio.h>
 
 #include <string.h>
+
+#include <evol/meta/strings.h>
 
 struct ev_WindowData {
     U32 width;
@@ -36,7 +42,13 @@ EV_CONSTRUCTOR
 
   WindowData.width = DEFAULT_WINDOW_WIDTH;
   WindowData.height = DEFAULT_WINDOW_HEIGHT;
-  strcpy(WindowData.windowTitle, DEFAULT_WINDOW_TITLE);
+
+  evstore_entry_t name;
+  if(evstore_get_checktype(GLOBAL_STORE, EV_CORE_NAME, EV_TYPE_STR, &name) == EV_STORE_ENTRY_FOUND) {
+    strcpy(WindowData.windowTitle, name.data);
+  } else {
+    strcpy(WindowData.windowTitle, DEFAULT_WINDOW_TITLE);
+  }
   WindowData.windowHandle = NULL;
   WindowData.created = false;
 
