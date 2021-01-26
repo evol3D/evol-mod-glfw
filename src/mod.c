@@ -1,12 +1,7 @@
-#include "evol/common/ev_types.h"
-#include "evol/core/evol.h"
-#include "evol/core/evstore.h"
 #define EV_MODULE_DEFINE
 #include <evol/evolmod.h>
 
 #include <GLFW/glfw3.h>
-
-#include <assert.h>
 
 #define MAX_WINDOW_TITLE_LENGTH 256
 #define DEFAULT_WINDOW_WIDTH 800
@@ -58,7 +53,7 @@ glfw_initialization_failed:
   return 1;
 }
 
-EV_EXPORT bool createWindow()
+EVMODAPI bool createWindow()
 {
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
   WindowData.windowHandle = glfwCreateWindow(WindowData.width, WindowData.height, WindowData.windowTitle, NULL, NULL);
@@ -66,7 +61,7 @@ EV_EXPORT bool createWindow()
   return WindowData.windowHandle != NULL;
 }
 
-EV_EXPORT void windowLoop()
+EVMODAPI void windowLoop()
 {
   while(!glfwWindowShouldClose(WindowData.windowHandle)) {
     glfwPollEvents();
@@ -102,19 +97,19 @@ void _updateWindowSize()
   glfwSetWindowSize(WindowData.windowHandle, WindowData.width, WindowData.height);
 }
 
-EV_EXPORT void setWindowHeight(U32 height)
+EVMODAPI void setWindowHeight(U32 height)
 {
   WindowData.height = height;
   _updateWindowSize();
 }
 
-EV_EXPORT void setWindowWidth(U32 width)
+EVMODAPI void setWindowWidth(U32 width)
 {
   WindowData.width = width;
   _updateWindowSize();
 }
 
-EV_EXPORT void setWindowSize(U32 width, U32 height)
+EVMODAPI void setWindowSize(U32 width, U32 height)
 {
   WindowData.width = width;
   WindowData.height = height;
