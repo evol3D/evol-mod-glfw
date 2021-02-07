@@ -9,8 +9,6 @@
 #define DEFAULT_WINDOW_TITLE "Hello Window!"
 
 #include <stdbool.h>
-#include <stdio.h>
-
 #include <string.h>
 
 #include <evol/meta/strings.h>
@@ -53,12 +51,44 @@ glfw_initialization_failed:
   return 1;
 }
 
+void windowResizeCallback(GLFWwindow *window, int width, int height)
+{
+  (void)window;
+  DISPATCH_EVENT(WindowResizedEvent, {
+      .width = width,
+      .height = height,
+  });
+}
+
+DECLARE_EVENT_LISTENER(windowResizedListener, (WindowResizedEvent *event) {
+    printf("WindowResized. New Size: (%u, %u)\n", event->width, event->height);
+})
+
+void
+initializeCallbacks()
+{
+  glfwSetWindowSizeCallback(WindowData.windowHandle, windowResizeCallback);
+}
+
+void
+initializeEventListeners()
+{
+  ACTIVATE_EVENT_LISTENER(windowResizedListener, WindowResizedEvent);
+}
+
+
 EVMODAPI bool createWindow()
 {
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
   WindowData.windowHandle = glfwCreateWindow(WindowData.width, WindowData.height, WindowData.windowTitle, NULL, NULL);
+  if(WindowData.windowHandle == NULL) {
+    return false;
+  }
 
-  return WindowData.windowHandle != NULL;
+  initializeCallbacks();
+  initializeEventListeners();
+
+  return true;
 }
 
 EVMODAPI void windowLoop()

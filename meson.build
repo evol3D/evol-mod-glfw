@@ -41,6 +41,7 @@ module = shared_module(
   'evmodglfw', mod_src,
   include_directories: mod_incdir,
   dependencies: mod_deps,
+  c_args: ['-fms-extensions'],
 )
 
 mod_dep = declare_dependency(

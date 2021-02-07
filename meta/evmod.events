@@ -1,0 +1,3 @@
+PRIMARY(WindowEvent, {})
+
+SECONDARY(WindowEvent, WindowResizedEvent, { U32 width; U32 height; })
