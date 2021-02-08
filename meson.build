@@ -45,7 +45,6 @@ module = shared_module(
 )
 
 mod_dep = declare_dependency(
-  link_with: module,
   include_directories: mod_incdir,
 )
 
