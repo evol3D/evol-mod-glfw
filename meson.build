@@ -10,7 +10,7 @@ mod_src = [
   'src/mod.c'
 ]
 
-mod_incdir = []
+mod_incdir = ['..']
 
 evol_dep = dependency('evol')
 
@@ -46,6 +46,7 @@ module = shared_module(
 
 mod_dep = declare_dependency(
   link_with: module,
+  include_directories: mod_incdir,
 )
 
 if meson.version().version_compare('>= 0.54.0')
