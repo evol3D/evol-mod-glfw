@@ -37,7 +37,7 @@ EV_CONSTRUCTOR
   WindowData.height = DEFAULT_WINDOW_HEIGHT;
 
   evstore_entry_t name;
-  if(evstore_get_checktype(GLOBAL_STORE, EV_CORE_NAME, EV_TYPE_STR, &name) == EV_STORE_ENTRY_FOUND) {
+  if(evstore_get_checktype(GLOBAL_STORE, EV_CORE_NAME, EV_TYPE_SDS, &name) == EV_STORE_ENTRY_FOUND) {
     strcpy(WindowData.windowTitle, name.data);
   } else {
     strcpy(WindowData.windowTitle, DEFAULT_WINDOW_TITLE);
