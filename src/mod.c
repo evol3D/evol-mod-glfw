@@ -1,3 +1,5 @@
+#include "evol/common/ev_macros.h"
+#include "evol/core/eventsystem.h"
 #define EV_MODULE_DEFINE
 #include <evol/evolmod.h>
 
@@ -27,6 +29,8 @@ struct ev_InputData {
   U32 dummy;
 };
 
+EVMODAPI bool createWindow();
+
 EV_CONSTRUCTOR
 {
   if(!glfwInit()) {
@@ -45,8 +49,15 @@ EV_CONSTRUCTOR
   WindowData.windowHandle = NULL;
   WindowData.created = false;
 
+  if(!createWindow()) {
+    goto window_creation_failed;
+  }
+  WindowData.created = true;
+
+
   return 0;
 
+window_creation_failed:
 glfw_initialization_failed:
   return 1;
 }
@@ -60,22 +71,47 @@ void windowResizeCallback(GLFWwindow *window, int width, int height)
   });
 }
 
-DECLARE_EVENT_LISTENER(windowResizedListener, (WindowResizedEvent *event) {
-    printf("WindowResized. New Size: (%u, %u)\n", event->width, event->height);
-})
+void keyCallback(GLFWwindow *_window, int key, int _scancode, int action, int mods)
+{
+  EV_UNUSED_PARAM(_window);
+  EV_UNUSED_PARAM(_scancode);
+
+  switch (action) {
+    case GLFW_PRESS:
+      DISPATCH_EVENT(KeyPressedEvent, {.keyCode = key, .mods = mods});
+      break;
+    case GLFW_RELEASE:
+      DISPATCH_EVENT(KeyReleasedEvent, {.keyCode = key, .mods = mods});
+      break;
+    case GLFW_REPEAT:
+    default:
+      break;
+  }
+}
+
+void cursorMoveCallback(GLFWwindow *_window, F64 x, F64 y)
+{
+  EV_UNUSED_PARAM(_window);
+  DISPATCH_EVENT(MouseMovedEvent, {
+    .position = {
+      .x = x,
+      .y = y,
+    }
+  });
+}
 
 void
 initializeCallbacks()
 {
   glfwSetWindowSizeCallback(WindowData.windowHandle, windowResizeCallback);
+  glfwSetKeyCallback(WindowData.windowHandle, keyCallback);
+  glfwSetCursorPosCallback(WindowData.windowHandle, cursorMoveCallback);
 }
 
 void
 initializeEventListeners()
 {
-  ACTIVATE_EVENT_LISTENER(windowResizedListener, WindowResizedEvent);
 }
-
 
 EVMODAPI bool createWindow()
 {
@@ -91,25 +127,16 @@ EVMODAPI bool createWindow()
   return true;
 }
 
-EVMODAPI void windowLoop()
+EV_UPDATE
 {
-  while(!glfwWindowShouldClose(WindowData.windowHandle)) {
+  EV_UNUSED_PARAM(deltaTime);
+
+  if(!glfwWindowShouldClose(WindowData.windowHandle)) {
     glfwPollEvents();
-  }
-}
-
-EV_START {
-  if(!createWindow()) {
-    goto window_creation_failed;
-  }
-  WindowData.created = true;
-
-  windowLoop();
-
-  return 0;
-
-window_creation_failed:
+    return 0;
+  } else {
     return 1;
+  }
 }
 
 EV_DESTRUCTOR
