@@ -1,5 +1,3 @@
-#include "evol/common/ev_macros.h"
-#include "evol/core/eventsystem.h"
 #define EV_MODULE_DEFINE
 #include <evol/evolmod.h>
 
