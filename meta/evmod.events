@@ -1,6 +1,6 @@
-PRIMARY(WindowEvent, {})
-PRIMARY(KeyEvent, {})
-PRIMARY(MouseEvent, {})
+PRIMARY(WindowEvent)
+PRIMARY(KeyEvent)
+PRIMARY(MouseEvent)
 
 SECONDARY(WindowEvent, WindowResizedEvent, { U32 width; U32 height; })
 
