@@ -1,0 +1,6 @@
+EV_NS_DEF_BEGIN(Window)
+
+EV_NS_DEF_FN(U32 , update , (F32)     )
+EV_NS_DEF_FN(void, setSize, (U32, U32))
+
+EV_NS_DEF_END(Window)
