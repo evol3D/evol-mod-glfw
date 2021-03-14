@@ -52,7 +52,6 @@ EV_CONSTRUCTOR
   }
   WindowData.created = true;
 
-
   return 0;
 
 window_creation_failed:
@@ -125,7 +124,7 @@ EVMODAPI bool createWindow()
   return true;
 }
 
-EV_UPDATE
+U32 update(F32 deltaTime)
 {
   EV_UNUSED_PARAM(deltaTime);
 
@@ -169,4 +168,12 @@ EVMODAPI void setWindowSize(U32 width, U32 height)
   WindowData.width = width;
   WindowData.height = height;
   _updateWindowSize();
+}
+
+EV_BINDINGS
+{
+  EV_NS_BIND_FN(Window, setSize, setWindowSize);
+  EV_NS_BIND_FN(Window, setWidth, setWindowWidth);
+  EV_NS_BIND_FN(Window, setHeight, setWindowHeight);
+  EV_NS_BIND_FN(Window, update, update);
 }

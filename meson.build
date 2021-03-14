@@ -2,6 +2,8 @@ project('evol-mod-glfw', 'c',
 version : '0.1',
 default_options : ['warning_level=3', 'c_std=c11'])
 
+# Meson modules import
+fs = import('fs')
 cmake = import('cmake')
 
 cc = meson.get_compiler('c')
@@ -9,6 +11,21 @@ cc = meson.get_compiler('c')
 mod_src = [
   'src/mod.c'
 ]
+
+mod_args = []
+
+# GCC arg for ms-extensions (specifically, nameless anonymous structs/unions)
+if build_machine.system() != 'windows'
+  mod_args += '-fms-extensions'
+endif
+
+# Metafiles c_args defs
+if fs.is_file('meta/evmod.namespaces')
+  mod_args += '-DEVMOD_NAMESPACES_DEF'
+endif
+if fs.is_file('meta/evmod.events')
+  mod_args += '-DEVMOD_EVENTS_DEF'
+endif
 
 mod_incdir = ['..']
 
@@ -41,7 +58,7 @@ module = shared_module(
   'evmodglfw', mod_src,
   include_directories: mod_incdir,
   dependencies: mod_deps,
-  c_args: ['-fms-extensions'],
+  c_args: mod_args,
 )
 
 mod_dep = declare_dependency(
