@@ -4,14 +4,8 @@ PRIMARY(MouseEvent)
 
 SECONDARY(WindowEvent, WindowResizedEvent, { U32 width; U32 height; })
 
-TYPE(GenericKeyEvent, { I32 keyCode; I32 mods; })
-
 SECONDARY(KeyEvent, KeyPressedEvent, { GenericKeyEvent; })
 SECONDARY(KeyEvent, KeyReleasedEvent, { GenericKeyEvent; })
-
-TYPE(MousePosition, { F64 x; F64 y; })
-
-TYPE(GenericMouseButtonEvent, { I32 buttonId; })
 
 SECONDARY(MouseEvent, MouseMovedEvent, { MousePosition position; })
 SECONDARY(MouseEvent, MouseButtonPressedEvent, { GenericMouseButtonEvent; })

@@ -1,0 +1,3 @@
+TYPE(GenericKeyEvent, { I32 keyCode; I32 mods; })
+TYPE(MousePosition, { F64 x; F64 y; })
+TYPE(GenericMouseButtonEvent, { I32 buttonId; })
