@@ -56,6 +56,7 @@ configure_file(
   output: moduleconfig + '.h',
   capture: true
 )
+mod_args += '-DEVMOD_LUA='+meson.project_build_root()+'/'+moduleconfig+'.h'
 
 module = shared_module(
   'evmodglfw', mod_src,
