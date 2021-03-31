@@ -170,10 +170,18 @@ EVMODAPI void setWindowSize(U32 width, U32 height)
   _updateWindowSize();
 }
 
+EVMODAPI void closeWindow()
+{
+  if(WindowData.windowHandle) {
+    glfwSetWindowShouldClose(WindowData.windowHandle, 1);
+  }
+}
+
 EV_BINDINGS
 {
   EV_NS_BIND_FN(Window, setSize, setWindowSize);
   EV_NS_BIND_FN(Window, setWidth, setWindowWidth);
   EV_NS_BIND_FN(Window, setHeight, setWindowHeight);
+  EV_NS_BIND_FN(Window, close, closeWindow);
   EV_NS_BIND_FN(Window, update, update);
 }
