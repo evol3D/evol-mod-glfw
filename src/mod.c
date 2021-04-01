@@ -1,7 +1,12 @@
-// This file is under heavy maintenance. The entire API is being changed
+// NOTICE: This file is under heavy maintenance. Proceed with care
+
+// If we ever get more than one debug window, mutexes should be used to ensure that
+// contexts don't interfere with each other. Also, the idempotence of the glad metaloading
+// should be tested.
 #define EV_MODULE_DEFINE
 #include <evol/evolmod.h>
 
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 struct ev_WindowData {
@@ -18,7 +23,6 @@ __ev_vecdestr_windowhandle(
     GLFWwindow *handle = *(GLFWwindow**)p_handle;
     glfwSetWindowShouldClose(handle, 1);
 }
-
 
 EV_CONSTRUCTOR
 {
@@ -180,9 +184,16 @@ _ev_dbgwindow_create(
 {
   glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_ANY_PROFILE);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0); 
   WindowHandle dbgWindowHandle = glfwCreateWindow(width, height, title, NULL, NULL);
+
   if (!dbgWindowHandle)
       return NULL;
+
+  glfwMakeContextCurrent(dbgWindowHandle);
+  gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
+
   vec_push(&WindowData.dbg_windows, &dbgWindowHandle);
   __ev_initialize_eventcallbacks(dbgWindowHandle);
   return dbgWindowHandle;
@@ -202,6 +213,20 @@ _ev_dbgwindow_setactive(
   glfwMakeContextCurrent(handle);
 }
 
+EVMODAPI void
+_ev_dbgwindow_startframe(
+  WindowHandle handle) 
+{
+  _ev_dbgwindow_setactive(handle);
+}
+
+EVMODAPI void
+_ev_dbgwindow_endframe(
+  WindowHandle handle)
+{
+  glfwSwapBuffers(handle);
+}
+
 EVMODAPI U32 
 _ev_dbgwindow_update(
     WindowHandle handle)
@@ -214,6 +239,8 @@ _ev_dbgwindow_update(
   }
 }
 
+#include <ev_imgl.h>
+
 EV_BINDINGS
 {
   // Window namespace bindings
@@ -225,8 +252,13 @@ EV_BINDINGS
   EV_NS_BIND_FN(Window, destroy  , _ev_window_destroy  );
 
   // DbgWindow namespace bindings
-  EV_NS_BIND_FN(DbgWindow, create   , _ev_dbgwindow_create   );
-  EV_NS_BIND_FN(DbgWindow, destroy  , _ev_dbgwindow_destroy  );
-  EV_NS_BIND_FN(DbgWindow, update   , _ev_dbgwindow_update   );
-  EV_NS_BIND_FN(DbgWindow, setActive, _ev_dbgwindow_setactive);
+  EV_NS_BIND_FN(DbgWindow, create    , _ev_dbgwindow_create   );
+  EV_NS_BIND_FN(DbgWindow, destroy   , _ev_dbgwindow_destroy  );
+  EV_NS_BIND_FN(DbgWindow, update    , _ev_dbgwindow_update   );
+  EV_NS_BIND_FN(DbgWindow, startFrame, _ev_dbgwindow_startframe);
+  EV_NS_BIND_FN(DbgWindow, endFrame  , _ev_dbgwindow_endframe);
+
+  // imGL namespace bindings
+  EV_NS_BIND_FN(imGL, setClearColor, _ev_imgl_setclearcolor);
+  EV_NS_BIND_FN(imGL, clearColorBuffer, _ev_imgl_clearcolorbuffer);
 }

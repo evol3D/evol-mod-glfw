@@ -9,7 +9,10 @@ cmake = import('cmake')
 cc = meson.get_compiler('c')
 
 mod_src = [
-  'src/mod.c'
+  'src/mod.c',
+  'src/ev_imgl.c',
+
+  'extern/src/glad/glad.c',
 ]
 
 mod_args = []
@@ -30,7 +33,11 @@ if fs.is_file('meta/evmod.types')
   mod_args += '-DEVMOD_TYPES_DEF'
 endif
 
-mod_incdir = ['..']
+mod_incdir = [
+  '..',
+  'include',
+  'extern/include',
+]
 
 evol_dep = dependency('evol')
 
