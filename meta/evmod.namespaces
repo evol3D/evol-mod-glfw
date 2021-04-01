@@ -1,9 +1,19 @@
 EV_NS_DEF_BEGIN(Window)
 
-EV_NS_DEF_FN(U32 , update   , (F32, deltaTime))
-EV_NS_DEF_FN(void, setSize  , (U32, newWidth ), (U32, newHeight))
-EV_NS_DEF_FN(void, setWidth , (U32, newWidth ))
-EV_NS_DEF_FN(void, setHeight, (U32, newHeight))
-EV_NS_DEF_FN(void, close)
+EV_NS_DEF_FN(WindowHandle, create, (U32, width), (U32, height), (CONST_STR, title))
+EV_NS_DEF_FN(U32 , update   , (WindowHandle, handle))
+EV_NS_DEF_FN(void, setWidth , (WindowHandle, handle), (U32, width ))
+EV_NS_DEF_FN(void, setHeight, (WindowHandle, handle), (U32, height))
+EV_NS_DEF_FN(void, setSize  , (WindowHandle, handle), (U32, width ), (U32, height))
+EV_NS_DEF_FN(void, destroy  , (WindowHandle, handle))
 
 EV_NS_DEF_END(Window)
+
+EV_NS_DEF_BEGIN(DbgWindow)
+
+EV_NS_DEF_FN(WindowHandle, create   , (U32, width), (U32, height), (CONST_STR, title))
+EV_NS_DEF_FN(U32         , update   , (WindowHandle, handle))
+EV_NS_DEF_FN(void        , setActive, (WindowHandle, handle))
+EV_NS_DEF_FN(void        , destroy  , (WindowHandle, handle))
+
+EV_NS_DEF_END(DbgWindow)

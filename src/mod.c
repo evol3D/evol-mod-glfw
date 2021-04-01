@@ -1,84 +1,65 @@
+// This file is under heavy maintenance. The entire API is being changed
 #define EV_MODULE_DEFINE
 #include <evol/evolmod.h>
 
 #include <GLFW/glfw3.h>
 
-#define MAX_WINDOW_TITLE_LENGTH 256
-#define DEFAULT_WINDOW_WIDTH 800
-#define DEFAULT_WINDOW_HEIGHT 600
-#define DEFAULT_WINDOW_TITLE "Hello Window!"
-
-#include <stdbool.h>
-#include <string.h>
-
-#include <evol/meta/strings.h>
-
 struct ev_WindowData {
-    U32 width;
-    U32 height;
+    bool glfwInitialized;
 
-    char windowTitle[MAX_WINDOW_TITLE_LENGTH];
-    GLFWwindow *windowHandle;
-
-    bool created;
+    vec(WindowHandle) windows;
+    vec(WindowHandle) dbg_windows;
 } WindowData;
 
-struct ev_InputData {
-  U32 dummy;
-};
+void 
+__ev_vecdestr_windowhandle(
+    WindowHandle* p_handle)
+{
+    GLFWwindow *handle = *(GLFWwindow**)p_handle;
+    glfwSetWindowShouldClose(handle, 1);
+}
 
-EVMODAPI bool createWindow();
 
 EV_CONSTRUCTOR
 {
   if(!glfwInit()) {
-    goto glfw_initialization_failed;
+	return 1;
   }
-
-  WindowData.width = DEFAULT_WINDOW_WIDTH;
-  WindowData.height = DEFAULT_WINDOW_HEIGHT;
-
-  evstore_entry_t name;
-  if(evstore_get_checktype(GLOBAL_STORE, EV_CORE_NAME, EV_TYPE_SDS, &name) == EV_STORE_ENTRY_FOUND) {
-    strcpy(WindowData.windowTitle, name.data);
-  } else {
-    strcpy(WindowData.windowTitle, DEFAULT_WINDOW_TITLE);
-  }
-  WindowData.windowHandle = NULL;
-  WindowData.created = false;
-
-  if(!createWindow()) {
-    goto window_creation_failed;
-  }
-  WindowData.created = true;
-
+  WindowData.glfwInitialized = true;
+  WindowData.windows = vec_init(WindowHandle, NULL, __ev_vecdestr_windowhandle);
+  WindowData.dbg_windows = vec_init(WindowHandle, NULL, __ev_vecdestr_windowhandle);
   return 0;
-
-window_creation_failed:
-glfw_initialization_failed:
-  return 1;
 }
 
-void windowResizeCallback(GLFWwindow *window, int width, int height)
+void 
+__ev_windowresize_eventdispatch_callback(
+    GLFWwindow *window, 
+    U32 width, 
+    U32 height)
 {
-  (void)window;
   DISPATCH_EVENT(WindowResizedEvent, {
+      .handle = (WindowHandle) window,
       .width = width,
       .height = height,
   });
 }
 
-void keyCallback(GLFWwindow *_window, int key, int _scancode, int action, int mods)
+void 
+__ev_key_eventdispatch_callback(
+    GLFWwindow *window, 
+    I32 key, 
+    I32 _scancode, 
+    I32 action, 
+    I32 mods)
 {
-  EV_UNUSED_PARAM(_window);
   EV_UNUSED_PARAM(_scancode);
 
   switch (action) {
     case GLFW_PRESS:
-      DISPATCH_EVENT(KeyPressedEvent, {.keyCode = key, .mods = mods});
+      DISPATCH_EVENT(KeyPressedEvent, {.handle = (WindowHandle) window, .keyCode = key, .mods = mods});
       break;
     case GLFW_RELEASE:
-      DISPATCH_EVENT(KeyReleasedEvent, {.keyCode = key, .mods = mods});
+      DISPATCH_EVENT(KeyReleasedEvent, {.handle = (WindowHandle) window, .keyCode = key, .mods = mods});
       break;
     case GLFW_REPEAT:
     default:
@@ -86,10 +67,14 @@ void keyCallback(GLFWwindow *_window, int key, int _scancode, int action, int mo
   }
 }
 
-void cursorMoveCallback(GLFWwindow *_window, F64 x, F64 y)
+void 
+__ev_cursormove_eventdispatch_callback(
+    GLFWwindow *window, 
+    F64 x, 
+    F64 y)
 {
-  EV_UNUSED_PARAM(_window);
   DISPATCH_EVENT(MouseMovedEvent, {
+    .handle = (WindowHandle) window,
     .position = {
       .x = x,
       .y = y,
@@ -98,37 +83,37 @@ void cursorMoveCallback(GLFWwindow *_window, F64 x, F64 y)
 }
 
 void
-initializeCallbacks()
+__ev_initialize_eventcallbacks(
+    WindowHandle handle)
 {
-  glfwSetWindowSizeCallback(WindowData.windowHandle, windowResizeCallback);
-  glfwSetKeyCallback(WindowData.windowHandle, keyCallback);
-  glfwSetCursorPosCallback(WindowData.windowHandle, cursorMoveCallback);
+  glfwSetWindowSizeCallback(handle, __ev_windowresize_eventdispatch_callback);
+  glfwSetKeyCallback(handle, __ev_key_eventdispatch_callback);
+  glfwSetCursorPosCallback(handle, __ev_cursormove_eventdispatch_callback);
 }
 
-void
-initializeEventListeners()
-{
-}
-
-EVMODAPI bool createWindow()
+EVMODAPI WindowHandle 
+_ev_window_create(
+    U32 width, 
+    U32 height, 
+    CONST_STR title)
 {
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-  WindowData.windowHandle = glfwCreateWindow(WindowData.width, WindowData.height, WindowData.windowTitle, NULL, NULL);
-  if(WindowData.windowHandle == NULL) {
-    return false;
-  }
+  WindowHandle handle = glfwCreateWindow(width, height, title, NULL, NULL);
 
-  initializeCallbacks();
-  initializeEventListeners();
+  if (!handle) 
+    return NULL;
 
-  return true;
+  vec_push(&WindowData.windows, &handle);
+  __ev_initialize_eventcallbacks(handle);
+
+  return handle;
 }
 
-U32 update(F32 deltaTime)
+EVMODAPI U32 
+_ev_window_update(
+    WindowHandle handle)
 {
-  EV_UNUSED_PARAM(deltaTime);
-
-  if(!glfwWindowShouldClose(WindowData.windowHandle)) {
+  if(!glfwWindowShouldClose(handle)) {
     glfwPollEvents();
     return 0;
   } else {
@@ -138,50 +123,110 @@ U32 update(F32 deltaTime)
 
 EV_DESTRUCTOR
 {
-  if(WindowData.created) {
-    glfwDestroyWindow(WindowData.windowHandle);
-  }
-  glfwTerminate();
+  // Close all windows
+  vec_fini(WindowData.windows);
+  vec_fini(WindowData.dbg_windows);
 
-  return 0; // Don't know of a way for these 2 functions to fail
+  if(WindowData.glfwInitialized)
+    glfwTerminate();
+
+  WindowData.glfwInitialized = false; // Useless as this is only executed when the module is about to be unloaded.
+
+  return 0;
 }
 
-void _updateWindowSize()
+EVMODAPI void 
+_ev_window_setwidth(
+    WindowHandle handle, 
+    U32 width)
 {
-  glfwSetWindowSize(WindowData.windowHandle, WindowData.width, WindowData.height);
+    U32 oldWidth, oldHeight;
+    glfwGetWindowSize((GLFWwindow*)handle, &oldWidth, &oldHeight);
+    glfwSetWindowSize((GLFWwindow*)handle, width, oldHeight);
 }
 
-EVMODAPI void setWindowHeight(U32 height)
+EVMODAPI void 
+_ev_window_setheight(
+    WindowHandle handle, 
+    U32 height)
 {
-  WindowData.height = height;
-  _updateWindowSize();
+    U32 oldWidth, oldHeight;
+    glfwGetWindowSize((GLFWwindow*)handle, &oldWidth, &oldHeight);
+    glfwSetWindowSize((GLFWwindow*)handle, oldWidth, height);
 }
 
-EVMODAPI void setWindowWidth(U32 width)
+EVMODAPI void 
+_ev_window_setsize(
+    WindowHandle handle, 
+    U32 width, 
+    U32 height)
 {
-  WindowData.width = width;
-  _updateWindowSize();
+    glfwSetWindowSize((GLFWwindow*)handle, width, height);
 }
 
-EVMODAPI void setWindowSize(U32 width, U32 height)
+EVMODAPI void 
+_ev_window_destroy(
+    WindowHandle handle)
 {
-  WindowData.width = width;
-  WindowData.height = height;
-  _updateWindowSize();
+  if (handle)
+	glfwSetWindowShouldClose((GLFWwindow*)handle, 1);
 }
 
-EVMODAPI void closeWindow()
+EVMODAPI WindowHandle 
+_ev_dbgwindow_create(
+    U32 width, 
+    U32 height, 
+    CONST_STR title)
 {
-  if(WindowData.windowHandle) {
-    glfwSetWindowShouldClose(WindowData.windowHandle, 1);
+  glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_ANY_PROFILE);
+  WindowHandle dbgWindowHandle = glfwCreateWindow(width, height, title, NULL, NULL);
+  if (!dbgWindowHandle)
+      return NULL;
+  vec_push(&WindowData.dbg_windows, &dbgWindowHandle);
+  __ev_initialize_eventcallbacks(dbgWindowHandle);
+  return dbgWindowHandle;
+}
+
+EVMODAPI void
+_ev_dbgwindow_destroy(
+    WindowHandle handle)
+{
+  glfwSetWindowShouldClose((GLFWwindow *) handle, 1);
+}
+
+EVMODAPI void 
+_ev_dbgwindow_setactive(
+    WindowHandle handle)
+{
+  glfwMakeContextCurrent(handle);
+}
+
+EVMODAPI U32 
+_ev_dbgwindow_update(
+    WindowHandle handle)
+{
+  if(!glfwWindowShouldClose(handle)) {
+    glfwPollEvents();
+    return 0;
+  } else {
+    return 1;
   }
 }
 
 EV_BINDINGS
 {
-  EV_NS_BIND_FN(Window, setSize, setWindowSize);
-  EV_NS_BIND_FN(Window, setWidth, setWindowWidth);
-  EV_NS_BIND_FN(Window, setHeight, setWindowHeight);
-  EV_NS_BIND_FN(Window, close, closeWindow);
-  EV_NS_BIND_FN(Window, update, update);
+  // Window namespace bindings
+  EV_NS_BIND_FN(Window, create   , _ev_window_create   );
+  EV_NS_BIND_FN(Window, update   , _ev_window_update   );
+  EV_NS_BIND_FN(Window, setWidth , _ev_window_setwidth );
+  EV_NS_BIND_FN(Window, setHeight, _ev_window_setheight);
+  EV_NS_BIND_FN(Window, setSize  , _ev_window_setsize  );
+  EV_NS_BIND_FN(Window, destroy  , _ev_window_destroy  );
+
+  // DbgWindow namespace bindings
+  EV_NS_BIND_FN(DbgWindow, create   , _ev_dbgwindow_create   );
+  EV_NS_BIND_FN(DbgWindow, destroy  , _ev_dbgwindow_destroy  );
+  EV_NS_BIND_FN(DbgWindow, update   , _ev_dbgwindow_update   );
+  EV_NS_BIND_FN(DbgWindow, setActive, _ev_dbgwindow_setactive);
 }
