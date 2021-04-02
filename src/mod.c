@@ -169,6 +169,15 @@ _ev_window_setsize(
 }
 
 EVMODAPI void 
+_ev_window_getsize(
+    WindowHandle handle, 
+    U32 *width, 
+    U32 *height)
+{
+    glfwGetWindowSize((GLFWwindow*)handle, width, height);
+}
+
+EVMODAPI void 
 _ev_window_destroy(
     WindowHandle handle)
 {
@@ -249,6 +258,7 @@ EV_BINDINGS
   EV_NS_BIND_FN(Window, setWidth , _ev_window_setwidth );
   EV_NS_BIND_FN(Window, setHeight, _ev_window_setheight);
   EV_NS_BIND_FN(Window, setSize  , _ev_window_setsize  );
+  EV_NS_BIND_FN(Window, getSize  , _ev_window_getsize  );
   EV_NS_BIND_FN(Window, destroy  , _ev_window_destroy  );
 
   // DbgWindow namespace bindings
@@ -259,6 +269,15 @@ EV_BINDINGS
   EV_NS_BIND_FN(DbgWindow, endFrame  , _ev_dbgwindow_endframe);
 
   // imGL namespace bindings
-  EV_NS_BIND_FN(imGL, setClearColor, _ev_imgl_setclearcolor);
+  EV_NS_BIND_FN(imGL, setClearColor   , _ev_imgl_setclearcolor);
+  EV_NS_BIND_FN(imGL, clearBuffers    , _ev_imgl_clearbuffers);
   EV_NS_BIND_FN(imGL, clearColorBuffer, _ev_imgl_clearcolorbuffer);
+  EV_NS_BIND_FN(imGL, clearDepthBuffer, _ev_imgl_cleardepthbuffer);
+  EV_NS_BIND_FN(imGL, setColor3f      , _ev_imgl_setcolor3f);
+  EV_NS_BIND_FN(imGL, drawLine        , _ev_imgl_drawline);
+  EV_NS_BIND_FN(imGL, drawAABB        , _ev_imgl_drawaabb);
+  EV_NS_BIND_FN(imGL, projOrtho       , _ev_imgl_orthographic);
+  EV_NS_BIND_FN(imGL, projPersp       , _ev_imgl_perspective);
+  EV_NS_BIND_FN(imGL, setCameraView   , _ev_imgl_setcameraview);
+  EV_NS_BIND_FN(imGL, setViewport     , _ev_imgl_setviewport);
 }
