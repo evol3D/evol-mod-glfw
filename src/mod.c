@@ -6,6 +6,8 @@
 #define EV_MODULE_DEFINE
 #include <evol/evolmod.h>
 
+#include <evol/common/ev_profile.h>
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -21,13 +23,13 @@ __ev_vecdestr_windowhandle(
     WindowHandle* p_handle)
 {
     GLFWwindow *handle = *(GLFWwindow**)p_handle;
-    glfwSetWindowShouldClose(handle, 1);
+    glfwDestroyWindow(handle);
 }
 
 EV_CONSTRUCTOR
 {
   if(!glfwInit()) {
-	return 1;
+    return 1;
   }
   WindowData.glfwInitialized = true;
   WindowData.windows = vec_init(WindowHandle, NULL, __ev_vecdestr_windowhandle);
@@ -117,12 +119,18 @@ EVMODAPI U32
 _ev_window_update(
     WindowHandle handle)
 {
+  ev_BeginCPUSample(WindowUpdate, EV_CPUSF_None);
+  U32 res = 0;
+  if(window_title) {
+    ev_log_info("Window Title: %s", window_title);
+  }
   if(!glfwWindowShouldClose(handle)) {
     glfwPollEvents();
-    return 0;
   } else {
-    return 1;
+    res = 1;
   }
+  ev_EndCPUSample();
+  return res;
 }
 
 EV_DESTRUCTOR
@@ -179,10 +187,21 @@ _ev_window_getsize(
 
 EVMODAPI void 
 _ev_window_destroy(
-    WindowHandle handle)
+  WindowHandle handle)
 {
-  if (handle)
-	glfwSetWindowShouldClose((GLFWwindow*)handle, 1);
+  if (handle) {
+    glfwDestroyWindow((GLFWwindow*)handle);
+  }
+}
+
+EVMODAPI void
+_ev_window_setshouldclose(
+  WindowHandle handle, 
+  I32 value)
+{
+  if(handle) {
+    glfwSetWindowShouldClose((GLFWwindow *)handle, value);
+  }
 }
 
 EVMODAPI WindowHandle 
@@ -212,7 +231,9 @@ EVMODAPI void
 _ev_dbgwindow_destroy(
     WindowHandle handle)
 {
-  glfwSetWindowShouldClose((GLFWwindow *) handle, 1);
+  if(handle) {
+    glfwDestroyWindow((GLFWwindow*)handle);
+  }
 }
 
 EVMODAPI void 
@@ -244,6 +265,7 @@ _ev_dbgwindow_update(
     glfwPollEvents();
     return 0;
   } else {
+    _ev_dbgwindow_destroy(handle);
     return 1;
   }
 }
@@ -253,31 +275,32 @@ _ev_dbgwindow_update(
 EV_BINDINGS
 {
   // Window namespace bindings
-  EV_NS_BIND_FN(Window, create   , _ev_window_create   );
-  EV_NS_BIND_FN(Window, update   , _ev_window_update   );
-  EV_NS_BIND_FN(Window, setWidth , _ev_window_setwidth );
-  EV_NS_BIND_FN(Window, setHeight, _ev_window_setheight);
-  EV_NS_BIND_FN(Window, setSize  , _ev_window_setsize  );
-  EV_NS_BIND_FN(Window, getSize  , _ev_window_getsize  );
-  EV_NS_BIND_FN(Window, destroy  , _ev_window_destroy  );
+  EV_NS_BIND_FN(Window, create        , _ev_window_create        );
+  EV_NS_BIND_FN(Window, update        , _ev_window_update        );
+  EV_NS_BIND_FN(Window, setWidth      , _ev_window_setwidth      );
+  EV_NS_BIND_FN(Window, setHeight     , _ev_window_setheight     );
+  EV_NS_BIND_FN(Window, setSize       , _ev_window_setsize       );
+  EV_NS_BIND_FN(Window, getSize       , _ev_window_getsize       );
+  EV_NS_BIND_FN(Window, destroy       , _ev_window_destroy       );
+  EV_NS_BIND_FN(Window, setShouldClose, _ev_window_setshouldclose);
 
   // DbgWindow namespace bindings
-  EV_NS_BIND_FN(DbgWindow, create    , _ev_dbgwindow_create   );
-  EV_NS_BIND_FN(DbgWindow, destroy   , _ev_dbgwindow_destroy  );
-  EV_NS_BIND_FN(DbgWindow, update    , _ev_dbgwindow_update   );
+  EV_NS_BIND_FN(DbgWindow, create    , _ev_dbgwindow_create    );
+  EV_NS_BIND_FN(DbgWindow, destroy   , _ev_dbgwindow_destroy   );
+  EV_NS_BIND_FN(DbgWindow, update    , _ev_dbgwindow_update    );
   EV_NS_BIND_FN(DbgWindow, startFrame, _ev_dbgwindow_startframe);
-  EV_NS_BIND_FN(DbgWindow, endFrame  , _ev_dbgwindow_endframe);
+  EV_NS_BIND_FN(DbgWindow, endFrame  , _ev_dbgwindow_endframe  );
 
   // imGL namespace bindings
-  EV_NS_BIND_FN(imGL, setClearColor   , _ev_imgl_setclearcolor);
-  EV_NS_BIND_FN(imGL, clearBuffers    , _ev_imgl_clearbuffers);
+  EV_NS_BIND_FN(imGL, setClearColor   , _ev_imgl_setclearcolor   );
+  EV_NS_BIND_FN(imGL, clearBuffers    , _ev_imgl_clearbuffers    );
   EV_NS_BIND_FN(imGL, clearColorBuffer, _ev_imgl_clearcolorbuffer);
   EV_NS_BIND_FN(imGL, clearDepthBuffer, _ev_imgl_cleardepthbuffer);
-  EV_NS_BIND_FN(imGL, setColor3f      , _ev_imgl_setcolor3f);
-  EV_NS_BIND_FN(imGL, drawLine        , _ev_imgl_drawline);
-  EV_NS_BIND_FN(imGL, drawAABB        , _ev_imgl_drawaabb);
-  EV_NS_BIND_FN(imGL, projOrtho       , _ev_imgl_orthographic);
-  EV_NS_BIND_FN(imGL, projPersp       , _ev_imgl_perspective);
-  EV_NS_BIND_FN(imGL, setCameraView   , _ev_imgl_setcameraview);
-  EV_NS_BIND_FN(imGL, setViewport     , _ev_imgl_setviewport);
+  EV_NS_BIND_FN(imGL, setColor3f      , _ev_imgl_setcolor3f      );
+  EV_NS_BIND_FN(imGL, drawLine        , _ev_imgl_drawline        );
+  EV_NS_BIND_FN(imGL, drawAABB        , _ev_imgl_drawaabb        );
+  EV_NS_BIND_FN(imGL, projOrtho       , _ev_imgl_orthographic    );
+  EV_NS_BIND_FN(imGL, projPersp       , _ev_imgl_perspective     );
+  EV_NS_BIND_FN(imGL, setCameraView   , _ev_imgl_setcameraview   );
+  EV_NS_BIND_FN(imGL, setViewport     , _ev_imgl_setviewport     );
 }
