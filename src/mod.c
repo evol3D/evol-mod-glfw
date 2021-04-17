@@ -119,17 +119,12 @@ EVMODAPI U32
 _ev_window_update(
     WindowHandle handle)
 {
-  ev_BeginCPUSample(WindowUpdate, EV_CPUSF_None);
   U32 res = 0;
-  if(window_title) {
-    ev_log_info("Window Title: %s", window_title);
-  }
   if(!glfwWindowShouldClose(handle)) {
     glfwPollEvents();
   } else {
     res = 1;
   }
-  ev_EndCPUSample();
   return res;
 }
 
