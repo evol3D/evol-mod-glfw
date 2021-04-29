@@ -1,1 +1,1 @@
-EV_CONFIG_VAR(window_title, SDS, "Default Title")
+EV_CONFIG_VAR(window_title, STRING, "Default Title")
