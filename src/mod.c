@@ -18,6 +18,13 @@ struct ev_WindowData {
     vec(WindowHandle) dbg_windows;
 } WindowData;
 
+struct ev_InputData {
+  WindowHandle activeWindow;
+} InputData;
+
+void
+init_scripting_api();
+
 void 
 __ev_vecdestr_windowhandle(
     WindowHandle* p_handle)
@@ -34,6 +41,10 @@ EV_CONSTRUCTOR
   WindowData.glfwInitialized = true;
   WindowData.windows = vec_init(WindowHandle, NULL, __ev_vecdestr_windowhandle);
   WindowData.dbg_windows = vec_init(WindowHandle, NULL, __ev_vecdestr_windowhandle);
+
+  InputData.activeWindow = NULL;
+
+  init_scripting_api();
   return 0;
 }
 
@@ -265,6 +276,30 @@ _ev_dbgwindow_update(
   }
 }
 
+EVMODAPI bool
+_ev_input_getkeydown(
+    KeyCode key)
+{
+  int state = glfwGetKey(InputData.activeWindow, key);
+  return state == GLFW_PRESS || state == GLFW_REPEAT;
+}
+
+EVMODAPI bool
+_ev_input_getkeyup(
+    KeyCode key)
+{
+  int state = glfwGetKey(InputData.activeWindow, key);
+  return state == GLFW_RELEASE;
+}
+
+EVMODAPI void
+_ev_input_setactivewindow(
+    WindowHandle handle)
+{
+  // TODO add checking for valid window
+  InputData.activeWindow = handle;
+}
+
 #include <ev_imgl.h>
 
 EV_BINDINGS
@@ -298,4 +333,51 @@ EV_BINDINGS
   EV_NS_BIND_FN(imGL, projPersp       , _ev_imgl_perspective     );
   EV_NS_BIND_FN(imGL, setCameraView   , _ev_imgl_setcameraview   );
   EV_NS_BIND_FN(imGL, setViewport     , _ev_imgl_setviewport     );
+
+  // Input namespace bindings
+  EV_NS_BIND_FN(Input, setActiveWindow, _ev_input_setactivewindow);
+  EV_NS_BIND_FN(Input, getKeyDown     , _ev_input_getkeydown);
+  EV_NS_BIND_FN(Input, getKeyUp       , _ev_input_getkeyup);
+}
+
+// Initializing the scripting API
+#define TYPE_MODULE evmod_script
+#define NAMESPACE_MODULE evmod_script
+#include <evol/meta/type_import.h>
+#include <evol/meta/namespace_import.h>
+
+void
+_ev_input_getkeydown_wrapper(
+    bool *out,
+    KeyCode *key)
+{
+  *out = _ev_input_getkeydown(*key);
+}
+
+void
+_ev_input_getkeyup_wrapper(
+    bool *out,
+    KeyCode *key)
+{
+  *out = _ev_input_getkeyup(*key);
+}
+
+void
+init_scripting_api()
+{
+  evolmodule_t scripting_module = evol_loadmodule("script");
+  if(!scripting_module) return;
+  IMPORT_NAMESPACE(ScriptInterface, scripting_module);
+
+  ScriptType keyCodeSType = ScriptInterface->addType("unsigned int", sizeof(KeyCode));
+  ScriptType boolSType = ScriptInterface->getType("bool");
+
+  ScriptInterface->addFunction(_ev_input_getkeydown_wrapper, "ev_input_getkeydown", boolSType, 1, &keyCodeSType);
+  ScriptInterface->addFunction(_ev_input_getkeyup_wrapper, "ev_input_getkeyup", boolSType, 1, &keyCodeSType);
+
+  ScriptInterface->loadAPI("subprojects/evmod_glfw/script_api.lua");
+
+  evol_unloadmodule(scripting_module);
+  // Invalidating namespace reference as the module is unloaded
+  ScriptInterface = NULL;
 }

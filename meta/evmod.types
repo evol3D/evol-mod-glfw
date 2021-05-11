@@ -2,8 +2,11 @@
 // handle needs to be passed with events.
 TYPE(WindowHandle, PTR)
 
-TYPE(GenericKeyEvent, struct { I32 keyCode; I32 mods; })
+TYPE(KeyCode, U32)
+
+TYPE(GenericKeyEvent, struct { KeyCode keyCode; I32 mods; })
 TYPE(MousePosition, struct { F64 x; F64 y; })
 TYPE(GenericMouseButtonEvent, struct { I32 buttonId; })
 
 TYPE(GenericIOEvent, struct { WindowHandle handle; })
+

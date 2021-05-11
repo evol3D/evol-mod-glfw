@@ -30,3 +30,10 @@ EV_NS_DEF_FN(void, clearBuffers    , (,))
 EV_NS_DEF_FN(void, clearColorBuffer, (,))
 EV_NS_DEF_FN(void, clearDepthBuffer, (,))
 EV_NS_DEF_END(imGL)
+
+EV_NS_DEF_BEGIN(Input)
+EV_NS_DEF_FN(void, setActiveWindow, (WindowHandle, handle))
+EV_NS_DEF_FN(bool, getKeyDown, (KeyCode, key))
+EV_NS_DEF_FN(bool, getKeyUp, (KeyCode, key))
+EV_NS_DEF_END(Input)
+
