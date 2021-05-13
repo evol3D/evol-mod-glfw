@@ -7,6 +7,9 @@ EV_NS_DEF_FN(void, setSize       , (WindowHandle, handle), (U32, width ), (U32, 
 EV_NS_DEF_FN(void, getSize       , (WindowHandle, handle), (U32*, width ), (U32*, height))
 EV_NS_DEF_FN(void, destroy       , (WindowHandle, handle))
 EV_NS_DEF_FN(void, setShouldClose, (WindowHandle, handle), (I32, value))
+#ifdef EV_WINDOW_VULKAN_SUPPORT
+EV_NS_DEF_FN(VkResult, createVulkanSurface, (WindowHandle, handle), (VkInstance, instance), (VkSurfaceKHR*, surface))
+#endif
 EV_NS_DEF_END(Window)
 
 EV_NS_DEF_BEGIN(DbgWindow)

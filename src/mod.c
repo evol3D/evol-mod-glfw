@@ -3,13 +3,16 @@
 // If we ever get more than one debug window, mutexes should be used to ensure that
 // contexts don't interfere with each other. Also, the idempotence of the glad metaloading
 // should be tested.
+
+#include <glad/glad.h>
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
+#define EV_WINDOW_VULKAN_SUPPORT
+
 #define EV_MODULE_DEFINE
 #include <evol/evolmod.h>
 
 #include <evol/common/ev_profile.h>
-
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
 
 struct ev_WindowData {
     bool glfwInitialized;
@@ -300,6 +303,16 @@ _ev_input_setactivewindow(
   InputData.activeWindow = handle;
 }
 
+EVMODAPI VkResult
+_ev_window_createvulkansurface(
+    WindowHandle handle,
+    VkInstance instance,
+    VkSurfaceKHR* surface)
+{
+  return glfwCreateWindowSurface(instance, handle, NULL, surface);
+}
+
+
 #include <ev_imgl.h>
 
 EV_BINDINGS
@@ -313,6 +326,7 @@ EV_BINDINGS
   EV_NS_BIND_FN(Window, getSize       , _ev_window_getsize       );
   EV_NS_BIND_FN(Window, destroy       , _ev_window_destroy       );
   EV_NS_BIND_FN(Window, setShouldClose, _ev_window_setshouldclose);
+  EV_NS_BIND_FN(Window, createVulkanSurface, _ev_window_createvulkansurface);
 
   // DbgWindow namespace bindings
   EV_NS_BIND_FN(DbgWindow, create    , _ev_dbgwindow_create    );

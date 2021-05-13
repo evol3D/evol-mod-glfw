@@ -9,6 +9,8 @@ subdir('import')
 
 cmake = import('cmake')
 
+vulkan_dep = dependency('vulkan').partial_dependency(compile_args : true)
+
 glfw_proj = cmake.subproject('glfw')
 glfw_dep = glfw_proj.dependency('glfw')
 
@@ -29,6 +31,7 @@ mod_deps = [
   evmod_deps,
 
   glfw_dep,
+  vulkan_dep,
 ]
 
 module = shared_module(
