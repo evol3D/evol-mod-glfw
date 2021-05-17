@@ -336,17 +336,19 @@ EV_BINDINGS
   EV_NS_BIND_FN(DbgWindow, endFrame  , _ev_dbgwindow_endframe  );
 
   // imGL namespace bindings
-  EV_NS_BIND_FN(imGL, setClearColor   , _ev_imgl_setclearcolor   );
-  EV_NS_BIND_FN(imGL, clearBuffers    , _ev_imgl_clearbuffers    );
-  EV_NS_BIND_FN(imGL, clearColorBuffer, _ev_imgl_clearcolorbuffer);
-  EV_NS_BIND_FN(imGL, clearDepthBuffer, _ev_imgl_cleardepthbuffer);
-  EV_NS_BIND_FN(imGL, setColor3f      , _ev_imgl_setcolor3f      );
-  EV_NS_BIND_FN(imGL, drawLine        , _ev_imgl_drawline        );
-  EV_NS_BIND_FN(imGL, drawAABB        , _ev_imgl_drawaabb        );
-  EV_NS_BIND_FN(imGL, projOrtho       , _ev_imgl_orthographic    );
-  EV_NS_BIND_FN(imGL, projPersp       , _ev_imgl_perspective     );
-  EV_NS_BIND_FN(imGL, setCameraView   , _ev_imgl_setcameraview   );
-  EV_NS_BIND_FN(imGL, setViewport     , _ev_imgl_setviewport     );
+  EV_NS_BIND_FN(imGL, setClearColor    , _ev_imgl_setclearcolor   );
+  EV_NS_BIND_FN(imGL, clearBuffers     , _ev_imgl_clearbuffers    );
+  EV_NS_BIND_FN(imGL, clearColorBuffer , _ev_imgl_clearcolorbuffer);
+  EV_NS_BIND_FN(imGL, clearDepthBuffer , _ev_imgl_cleardepthbuffer);
+  EV_NS_BIND_FN(imGL, setColor3f       , _ev_imgl_setcolor3f      );
+  EV_NS_BIND_FN(imGL, drawLine         , _ev_imgl_drawline        );
+  EV_NS_BIND_FN(imGL, drawAABB         , _ev_imgl_drawaabb        );
+  EV_NS_BIND_FN(imGL, projOrtho        , _ev_imgl_orthographic    );
+  EV_NS_BIND_FN(imGL, projPersp        , _ev_imgl_perspective     );
+  EV_NS_BIND_FN(imGL, setCameraView    , _ev_imgl_setcameraview   );
+  EV_NS_BIND_FN(imGL, setCameraViewMat , _ev_imgl_setcameraviewmat   );
+  EV_NS_BIND_FN(imGL, setCameraProjMat , _ev_imgl_setcameraprojmat   );
+  EV_NS_BIND_FN(imGL, setViewport      , _ev_imgl_setviewport     );
 
   // Input namespace bindings
   EV_NS_BIND_FN(Input, setActiveWindow, _ev_input_setactivewindow);

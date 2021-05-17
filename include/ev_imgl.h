@@ -4,10 +4,7 @@
 
 EVMODAPI void
 _ev_imgl_setclearcolor(
-    F32 r, 
-    F32 g, 
-    F32 b, 
-    F32 a);
+    Vec4 color);
 
 EVMODAPI void
 _ev_imgl_clearcolorbuffer();
@@ -26,21 +23,13 @@ _ev_imgl_setcolor3f(
 
 EVMODAPI void
 _ev_imgl_drawline(
-  F32 from_x,
-  F32 from_y,
-  F32 from_z,
-  F32 to_x,
-  F32 to_y,
-  F32 to_z);
+  Vec3 from,
+  Vec3 to);
 
 EVMODAPI void
 _ev_imgl_drawaabb(
-  F32 from_x,
-  F32 from_y,
-  F32 from_z,
-  F32 to_x,
-  F32 to_y,
-  F32 to_z);
+  Vec3 from,
+  Vec3 to);
 
 EVMODAPI void
 _ev_imgl_orthographic(
@@ -67,9 +56,13 @@ _ev_imgl_setviewport(
 
 EVMODAPI void
 _ev_imgl_setcameraview(
-  F32 eye_x, 
-  F32 eye_y, 
-  F32 eye_z,
-  F32 dir_x, 
-  F32 dir_y, 
-  F32 dir_z);
+  Vec3 eye, 
+  Vec3 dir);
+
+EVMODAPI void
+_ev_imgl_setcameraviewmat(
+  Matrix4x4 viewMatrix);
+
+EVMODAPI void
+_ev_imgl_setcameraprojmat(
+  Matrix4x4 projMatrix);

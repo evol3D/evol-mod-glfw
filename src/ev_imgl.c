@@ -3,14 +3,13 @@
 
 #include <cglm/cglm.h>
 
+#include <evol/common/ev_log.h>
+
 EVMODAPI void
 _ev_imgl_setclearcolor(
-  F32 r, 
-  F32 g, 
-  F32 b, 
-  F32 a)
+  Vec4 color)
 {
-  glClearColor(r, g, b, a);
+  glClearColor(color.r, color.g, color.b, color.a);
 }
 
 EVMODAPI void
@@ -36,60 +35,52 @@ _ev_imgl_cleardepthbuffer()
 
 EVMODAPI void
 _ev_imgl_drawline(
-  F32 from_x,
-  F32 from_y,
-  F32 from_z,
-  F32 to_x,
-  F32 to_y,
-  F32 to_z)
+  Vec3 from,
+  Vec3 to)
 {
   glBegin(GL_LINES);
-  glVertex3f(from_x, from_y, from_z);
-  glVertex3f(to_x, to_y, to_z);
+  glVertex3fv((float*)&from);
+  glVertex3fv((float*)&to);
   glEnd();
 }
 
 EVMODAPI void
 _ev_imgl_drawaabb(
-  F32 from_x,
-  F32 from_y,
-  F32 from_z,
-  F32 to_x,
-  F32 to_y,
-  F32 to_z)
+  Vec3 from,
+  Vec3 to)
 {
   glBegin(GL_LINES);
 
-  glVertex3f(from_x, from_y, from_z);
-  glVertex3f(from_x, from_y, to_z  );
+  glVertex3f(from.x, from.y, from.z);
+  glVertex3f(from.x, from.y, to.z  );
 
-  glVertex3f(from_x, from_y, from_z);
-  glVertex3f(from_x, to_y  , from_z);
+  glVertex3f(from.x, from.y, from.z);
+  glVertex3f(from.x, to.y  , from.z);
 
-  glVertex3f(from_x, from_y, from_z);
-  glVertex3f(to_x  , from_y, from_z);
+  glVertex3f(from.x, from.y, from.z);
+  glVertex3f(to.x  , from.y, from.z);
 
-  glVertex3f(to_x  , to_y  , to_z  );
-  glVertex3f(to_x  , to_y  , from_z);
-  glVertex3f(to_x  , to_y  , to_z  );
-  glVertex3f(to_x  , from_y, to_z  );
-  glVertex3f(to_x  , to_y  , to_z  );
-  glVertex3f(from_x, to_y  , to_z  );
+  glVertex3f(to.x  , to.y  , to.z  );
+  glVertex3f(to.x  , to.y  , from.z);
+  glVertex3f(to.x  , to.y  , to.z  );
+  glVertex3f(to.x  , from.y, to.z  );
+  glVertex3f(to.x  , to.y  , to.z  );
+  glVertex3f(from.x, to.y  , to.z  );
 
-  glVertex3f(from_x, from_y, to_z);
-  glVertex3f(from_x,   to_y, to_z);
-  glVertex3f(from_x, from_y, to_z);
-  glVertex3f(  to_x, from_y, to_z);
+  glVertex3f(from.x, from.y, to.z);
+  glVertex3f(from.x,   to.y, to.z);
+  glVertex3f(from.x, from.y, to.z);
+  glVertex3f(  to.x, from.y, to.z);
 
-  glVertex3f(from_x, to_y, from_z);
-  glVertex3f(from_x, to_y,   to_z);
-  glVertex3f(from_x, to_y, from_z);
-  glVertex3f(  to_x, to_y, from_z);
+  glVertex3f(from.x, to.y, from.z);
+  glVertex3f(from.x, to.y,   to.z);
+  glVertex3f(from.x, to.y, from.z);
+  glVertex3f(  to.x, to.y, from.z);
 
-  glVertex3f(to_x, from_y, from_z);
-  glVertex3f(to_x,   to_y, from_z);
-  glVertex3f(to_x, from_y, from_z);
-  glVertex3f(to_x, from_y,   to_z);
+  glVertex3f(to.x, from.y, from.z);
+  glVertex3f(to.x,   to.y, from.z);
+  glVertex3f(to.x, from.y, from.z);
+  glVertex3f(to.x, from.y,   to.z);
   glEnd();
 }
 
@@ -106,7 +97,7 @@ _ev_imgl_perspective(
   mat4 proj;
   glm_perspective(glm_rad(hfov), aspectRatio, near, far, proj);
 
-  glLoadMatrixf(proj);
+  glLoadMatrixf((float*)proj);
 }
 
 EVMODAPI void
@@ -122,7 +113,7 @@ _ev_imgl_orthographic(
   glLoadIdentity ();
   mat4 proj;
   glm_ortho(left, right, bottom, top, near, far, proj);
-  glLoadMatrixf(proj);
+  glLoadMatrixf((float*)proj);
 }
 
 EVMODAPI void
@@ -145,22 +136,32 @@ _ev_imgl_clearbuffers()
 
 EVMODAPI void
 _ev_imgl_setcameraview(
-  F32 eye_x, 
-  F32 eye_y, 
-  F32 eye_z,
-  F32 dir_x, 
-  F32 dir_y, 
-  F32 dir_z)
+  Vec3 eye,
+  Vec3 dir)
 {
   glMatrixMode (GL_MODELVIEW);
   glLoadIdentity ();
   mat4 view;
 
-  vec3 eye = {eye_x, eye_y, eye_z}; 
-  vec3 dir = {dir_x, dir_y, dir_z};
-  vec3 up  = {0.0  , 1.0  , 0.0  };
+  Vec3 up  = (Vec3){{0.0, 1.0, 0.0}};
 
-  glm_look(eye, dir, up, view);
+  glm_look((float*)&eye, (float*)&dir, (float*)&up, view);
 
-  glLoadMatrixf(view);
+  glLoadMatrixf((float*)view);
+}
+
+EVMODAPI void
+_ev_imgl_setcameraviewmat(
+    Matrix4x4 viewMatrix)
+{
+  glMatrixMode(GL_MODELVIEW);
+  glLoadMatrixf((float*)viewMatrix);
+}
+
+EVMODAPI void
+_ev_imgl_setcameraprojmat(
+    Matrix4x4 projMatrix)
+{
+  glMatrixMode(GL_PROJECTION);
+  glLoadMatrixf((float*)projMatrix);
 }
