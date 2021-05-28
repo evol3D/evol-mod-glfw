@@ -14,8 +14,12 @@
 
 #include <evol/common/ev_profile.h>
 
+#define IMPORT_MODULE evmod_script
+#include <evol/meta/module_import.h>
+
 struct ev_WindowData {
     bool glfwInitialized;
+
 
     vec(WindowHandle) windows;
     vec(WindowHandle) dbg_windows;
@@ -23,10 +27,12 @@ struct ev_WindowData {
 
 struct ev_InputData {
   WindowHandle activeWindow;
+  evolmodule_t script_mod;
 } InputData;
 
 void
-init_scripting_api();
+ev_inputmod_scriptapi_loader(
+    ScriptContextHandle ctx_h);
 
 void 
 __ev_vecdestr_windowhandle(
@@ -46,8 +52,12 @@ EV_CONSTRUCTOR
   WindowData.dbg_windows = vec_init(WindowHandle, NULL, __ev_vecdestr_windowhandle);
 
   InputData.activeWindow = NULL;
+  InputData.script_mod = evol_loadmodule("script");
+  if(InputData.script_mod) {
+    imports(InputData.script_mod, (ScriptInterface));
+    ScriptInterface->registerAPILoadFn(ev_inputmod_scriptapi_loader);
+  }
 
-  init_scripting_api();
   return 0;
 }
 
@@ -356,12 +366,6 @@ EV_BINDINGS
   EV_NS_BIND_FN(Input, getKeyUp       , _ev_input_getkeyup);
 }
 
-// Initializing the scripting API
-#define TYPE_MODULE evmod_script
-#define NAMESPACE_MODULE evmod_script
-#include <evol/meta/type_import.h>
-#include <evol/meta/namespace_import.h>
-
 void
 _ev_input_getkeydown_wrapper(
     bool *out,
@@ -379,21 +383,14 @@ _ev_input_getkeyup_wrapper(
 }
 
 void
-init_scripting_api()
+ev_inputmod_scriptapi_loader(
+    ScriptContextHandle ctx_h)
 {
-  evolmodule_t scripting_module = evol_loadmodule("script");
-  if(!scripting_module) return;
-  IMPORT_NAMESPACE(ScriptInterface, scripting_module);
+  ScriptType keyCodeSType = ScriptInterface->addType(ctx_h, "unsigned int", sizeof(KeyCode));
+  ScriptType boolSType = ScriptInterface->getType(ctx_h, "bool");
 
-  ScriptType keyCodeSType = ScriptInterface->addType("unsigned int", sizeof(KeyCode));
-  ScriptType boolSType = ScriptInterface->getType("bool");
+  ScriptInterface->addFunction(ctx_h, _ev_input_getkeydown_wrapper, "ev_input_getkeydown", boolSType, 1, &keyCodeSType);
+  ScriptInterface->addFunction(ctx_h, _ev_input_getkeyup_wrapper, "ev_input_getkeyup", boolSType, 1, &keyCodeSType);
 
-  ScriptInterface->addFunction(_ev_input_getkeydown_wrapper, "ev_input_getkeydown", boolSType, 1, &keyCodeSType);
-  ScriptInterface->addFunction(_ev_input_getkeyup_wrapper, "ev_input_getkeyup", boolSType, 1, &keyCodeSType);
-
-  ScriptInterface->loadAPI("subprojects/evmod_glfw/script_api.lua");
-
-  evol_unloadmodule(scripting_module);
-  // Invalidating namespace reference as the module is unloaded
-  ScriptInterface = NULL;
+  ScriptInterface->loadAPI(ctx_h, "subprojects/evmod_glfw/script_api.lua");
 }
