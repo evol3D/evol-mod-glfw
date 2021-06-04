@@ -39,7 +39,9 @@ __ev_vecdestr_windowhandle(
     WindowHandle* p_handle)
 {
     GLFWwindow *handle = *(GLFWwindow**)p_handle;
-    glfwDestroyWindow(handle);
+    if(handle) {
+      glfwDestroyWindow(handle);
+    }
 }
 
 EV_CONSTRUCTOR
@@ -158,6 +160,7 @@ EV_DESTRUCTOR
   vec_fini(WindowData.windows);
   vec_fini(WindowData.dbg_windows);
 
+  evol_unloadmodule(InputData.script_mod);
   if(WindowData.glfwInitialized)
     glfwTerminate();
 
@@ -210,6 +213,12 @@ _ev_window_destroy(
 {
   if (handle) {
     glfwDestroyWindow((GLFWwindow*)handle);
+    for(int i = 0; i < vec_len(WindowData.windows); i++) {
+      if(WindowData.windows[i] == handle) {
+        WindowData.windows[i] = NULL;
+        break;
+      }
+    }
   }
 }
 
@@ -250,8 +259,16 @@ EVMODAPI void
 _ev_dbgwindow_destroy(
     WindowHandle handle)
 {
-  if(handle) {
-    glfwDestroyWindow((GLFWwindow*)handle);
+  if(!handle) {
+    return;
+  }
+
+  for(int i = 0; i < vec_len(WindowData.dbg_windows); i++) {
+    if(WindowData.dbg_windows[i] == handle) {
+      glfwDestroyWindow((GLFWwindow*)handle);
+      WindowData.dbg_windows[i] = NULL;
+      break;
+    }
   }
 }
 
