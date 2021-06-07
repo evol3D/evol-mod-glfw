@@ -35,6 +35,12 @@ ev_input_lockcursor();
 EVMODAPI void
 ev_input_unlockcursor();
 
+EVMODAPI MousePosition
+ev_input_getmousepos();
+
+EVMODAPI MousePosition
+ev_input_getdeltamousepos();
+
 #define INPUT_BINDINGS() do {                                        \
     EV_NS_BIND_FN(Input, setActiveWindow, ev_input_setactivewindow); \
     EV_NS_BIND_FN(Input, getKeyDown     , ev_input_getkeydown);      \

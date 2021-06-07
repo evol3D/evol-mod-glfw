@@ -24,6 +24,20 @@ ev_input_getkeyup_wrapper(
 }
 
 void
+ev_input_getmousepos_wrapper(
+    MousePosition *out)
+{
+  *out = ev_input_getmousepos();
+}
+
+void
+ev_input_getdeltamousepos_wrapper(
+    MousePosition *out)
+{
+  *out = ev_input_getdeltamousepos();
+}
+
+void
 ev_input_getkeyjustpressed_wrapper(
     bool *out,
     KeyCode *key)
@@ -59,6 +73,15 @@ ev_inputmod_scriptapi_loader(
   ScriptType keyCodeSType = ScriptInterface->addType(ctx_h, "unsigned int", sizeof(KeyCode));
   ScriptType boolSType = ScriptInterface->getType(ctx_h, "bool");
   ScriptType voidSType = ScriptInterface->getType(ctx_h, "void");
+  ScriptType doubleSType = ScriptInterface->getType(ctx_h, "double");
+
+  ScriptType mousePosSType = ScriptInterface->addStruct(ctx_h, "MousePosition", sizeof(MousePosition), 2, (ScriptStructMember[]) {
+      {"x", doubleSType, offsetof(MousePosition, x)},
+      {"y", doubleSType, offsetof(MousePosition, y)},
+  });
+
+  ScriptInterface->addFunction(ctx_h, ev_input_getmousepos_wrapper, "ev_input_getmousepos", mousePosSType, 0, NULL);
+  ScriptInterface->addFunction(ctx_h, ev_input_getdeltamousepos_wrapper, "ev_input_getdeltamousepos", mousePosSType, 0, NULL);
 
   ScriptInterface->addFunction(ctx_h, ev_input_getkeydown_wrapper, "ev_input_getkeydown", boolSType, 1, &keyCodeSType);
   ScriptInterface->addFunction(ctx_h, ev_input_getkeyup_wrapper, "ev_input_getkeyup", boolSType, 1, &keyCodeSType);

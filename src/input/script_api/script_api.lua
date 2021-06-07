@@ -128,3 +128,11 @@ end
 Input.unlockCursor = function()
   C('ev_input_unlockcursor')
 end
+
+Input.getMousePos = function()
+  return C('ev_input_getmousepos')
+end
+
+Input.getDeltaMousePos = function()
+  return C('ev_input_getdeltamousepos')
+end
