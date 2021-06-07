@@ -113,6 +113,14 @@ Input.getKeyUp = function(keyCode)
   return C('ev_input_getkeyup', keyCode) == true
 end
 
+Input.getKeyJustPressed = function(keyCode)
+  return C('ev_input_getkeyjustpressed', keyCode) == true
+end
+
+Input.getKeyJustReleased = function(keyCode)
+  return C('ev_input_getkeyjustreleased', keyCode) == true
+end
+
 Input.lockCursor = function()
   C('ev_input_lockcursor')
 end

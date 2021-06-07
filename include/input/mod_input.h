@@ -6,6 +6,9 @@ ev_input_init();
 void
 ev_input_deinit();
 
+void
+ev_input_update();
+
 EVMODAPI void
 ev_input_setactivewindow(
     WindowHandle handle);
@@ -16,6 +19,14 @@ ev_input_getkeyup(
 
 EVMODAPI bool
 ev_input_getkeydown(
+    KeyCode key);
+
+EVMODAPI bool
+ev_input_getkeyjustreleased(
+    KeyCode key);
+
+EVMODAPI bool
+ev_input_getkeyjustpressed(
     KeyCode key);
 
 EVMODAPI void

@@ -24,6 +24,22 @@ ev_input_getkeyup_wrapper(
 }
 
 void
+ev_input_getkeyjustpressed_wrapper(
+    bool *out,
+    KeyCode *key)
+{
+  *out = ev_input_getkeyjustpressed(*key);
+}
+
+void
+ev_input_getkeyjustreleased_wrapper(
+    bool *out,
+    KeyCode *key)
+{
+  *out = ev_input_getkeyjustreleased(*key);
+}
+
+void
 ev_input_lockcursor_wrapper()
 {
   ev_input_lockcursor();
@@ -46,6 +62,8 @@ ev_inputmod_scriptapi_loader(
 
   ScriptInterface->addFunction(ctx_h, ev_input_getkeydown_wrapper, "ev_input_getkeydown", boolSType, 1, &keyCodeSType);
   ScriptInterface->addFunction(ctx_h, ev_input_getkeyup_wrapper, "ev_input_getkeyup", boolSType, 1, &keyCodeSType);
+  ScriptInterface->addFunction(ctx_h, ev_input_getkeyjustpressed_wrapper, "ev_input_getkeyjustpressed", boolSType, 1, &keyCodeSType);
+  ScriptInterface->addFunction(ctx_h, ev_input_getkeyjustreleased_wrapper, "ev_input_getkeyjustreleased", boolSType, 1, &keyCodeSType);
 
   ScriptInterface->addFunction(ctx_h, ev_input_lockcursor_wrapper, "ev_input_lockcursor", voidSType, 0, NULL);
   ScriptInterface->addFunction(ctx_h, ev_input_unlockcursor_wrapper, "ev_input_unlockcursor", voidSType, 0, NULL);
