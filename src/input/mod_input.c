@@ -44,7 +44,6 @@ void
 ev_input_init()
 {
   InputData.activeWindow = NULL;
-  ev_log_debug("INPUT's View of EVENT_TYPE_KeyPressedEvent%llu", EVENT_TYPE_KeyPressedEvent);
 
   ACTIVATE_EVENT_LISTENER(keyListener, KeyEvent);
   ACTIVATE_EVENT_LISTENER(cursorMovementListener, MouseMovedEvent);

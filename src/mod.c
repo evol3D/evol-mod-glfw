@@ -41,8 +41,6 @@ EV_CONSTRUCTOR
   WindowData.windows = vec_init(WindowHandle, NULL, (elem_destr)__ev_vecdestr_windowhandle);
   WindowData.dbg_windows = vec_init(WindowHandle, NULL, (elem_destr)__ev_vecdestr_windowhandle);
 
-  ev_log_debug("WINDOW's View of EVENT_TYPE_KeyPressedEvent%llu", EVENT_TYPE_KeyPressedEvent);
-
   ev_input_init();
   return 0;
 }
