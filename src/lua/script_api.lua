@@ -112,3 +112,11 @@ end
 Input.getKeyUp = function(keyCode)
   return C('ev_input_getkeyup', keyCode) == true
 end
+
+Input.lockCursor = function()
+  C('ev_input_lockcursor')
+end
+
+Input.unlockCursor = function()
+  C('ev_input_unlockcursor')
+end

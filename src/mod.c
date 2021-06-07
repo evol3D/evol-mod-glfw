@@ -138,6 +138,10 @@ _ev_window_create(
   vec_push(&WindowData.windows, &handle);
   __ev_initialize_eventcallbacks(handle);
 
+  if(glfwRawMouseMotionSupported()) {
+    glfwSetInputMode(handle, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+  }
+
   return handle;
 }
 
@@ -400,14 +404,30 @@ _ev_input_getkeyup_wrapper(
 }
 
 void
+ev_input_lockcursor()
+{
+  glfwSetInputMode(InputData.activeWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+}
+
+void
+ev_input_unlockcursor()
+{
+  glfwSetInputMode(InputData.activeWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+}
+
+void
 ev_inputmod_scriptapi_loader(
     ScriptContextHandle ctx_h)
 {
   ScriptType keyCodeSType = ScriptInterface->addType(ctx_h, "unsigned int", sizeof(KeyCode));
   ScriptType boolSType = ScriptInterface->getType(ctx_h, "bool");
+  ScriptType voidSType = ScriptInterface->getType(ctx_h, "void");
 
   ScriptInterface->addFunction(ctx_h, _ev_input_getkeydown_wrapper, "ev_input_getkeydown", boolSType, 1, &keyCodeSType);
   ScriptInterface->addFunction(ctx_h, _ev_input_getkeyup_wrapper, "ev_input_getkeyup", boolSType, 1, &keyCodeSType);
+
+  ScriptInterface->addFunction(ctx_h, ev_input_lockcursor, "ev_input_lockcursor", voidSType, 0, NULL);
+  ScriptInterface->addFunction(ctx_h, ev_input_unlockcursor, "ev_input_unlockcursor", voidSType, 0, NULL);
 
   ScriptInterface->loadAPI(ctx_h, "subprojects/evmod_glfw/script_api.lua");
 }
