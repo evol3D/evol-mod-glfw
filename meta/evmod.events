@@ -10,4 +10,3 @@ SECONDARY(KeyEvent, KeyReleasedEvent, { GenericKeyEvent; })
 SECONDARY(MouseEvent, MouseMovedEvent, { MousePosition position; })
 SECONDARY(MouseEvent, MouseButtonPressedEvent, { GenericMouseButtonEvent; })
 SECONDARY(MouseEvent, MouseButtonReleasedEvent, { GenericMouseButtonEvent; })
-

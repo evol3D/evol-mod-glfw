@@ -9,4 +9,3 @@ TYPE(MousePosition, struct { F64 x; F64 y; })
 TYPE(GenericMouseButtonEvent, struct { I32 buttonId; })
 
 TYPE(GenericIOEvent, struct { WindowHandle handle; })
-

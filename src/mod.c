@@ -13,26 +13,14 @@
 #include <evol/evolmod.h>
 
 #include <evol/common/ev_profile.h>
-
-#define IMPORT_MODULE evmod_script
-#include <evol/meta/module_import.h>
+#include <input/mod_input.h>
 
 struct ev_WindowData {
     bool glfwInitialized;
 
-
     vec(WindowHandle) windows;
     vec(WindowHandle) dbg_windows;
 } WindowData;
-
-struct ev_InputData {
-  WindowHandle activeWindow;
-  evolmodule_t script_mod;
-} InputData;
-
-void
-ev_inputmod_scriptapi_loader(
-    ScriptContextHandle ctx_h);
 
 void 
 __ev_vecdestr_windowhandle(
@@ -50,24 +38,18 @@ EV_CONSTRUCTOR
     return 1;
   }
   WindowData.glfwInitialized = true;
-  WindowData.windows = vec_init(WindowHandle, NULL, __ev_vecdestr_windowhandle);
-  WindowData.dbg_windows = vec_init(WindowHandle, NULL, __ev_vecdestr_windowhandle);
+  WindowData.windows = vec_init(WindowHandle, NULL, (elem_destr)__ev_vecdestr_windowhandle);
+  WindowData.dbg_windows = vec_init(WindowHandle, NULL, (elem_destr)__ev_vecdestr_windowhandle);
 
-  InputData.activeWindow = NULL;
-  InputData.script_mod = evol_loadmodule("script");
-  if(InputData.script_mod) {
-    imports(InputData.script_mod, (ScriptInterface));
-    ScriptInterface->registerAPILoadFn(ev_inputmod_scriptapi_loader);
-  }
-
+  ev_input_init();
   return 0;
 }
 
 void 
 __ev_windowresize_eventdispatch_callback(
     GLFWwindow *window, 
-    U32 width, 
-    U32 height)
+    I32 width, 
+    I32 height)
 {
   DISPATCH_EVENT(WindowResizedEvent, {
       .handle = (WindowHandle) window,
@@ -125,8 +107,8 @@ __ev_initialize_eventcallbacks(
 
 EVMODAPI WindowHandle 
 _ev_window_create(
-    U32 width, 
-    U32 height, 
+    U32 width,
+    U32 height,
     CONST_STR title)
 {
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -135,7 +117,7 @@ _ev_window_create(
   if (!handle) 
     return NULL;
 
-  vec_push(&WindowData.windows, &handle);
+  vec_push((vec_t*)&WindowData.windows, &handle);
   __ev_initialize_eventcallbacks(handle);
 
   if(glfwRawMouseMotionSupported()) {
@@ -164,7 +146,7 @@ EV_DESTRUCTOR
   vec_fini(WindowData.windows);
   vec_fini(WindowData.dbg_windows);
 
-  evol_unloadmodule(InputData.script_mod);
+  ev_input_deinit();
   if(WindowData.glfwInitialized)
     glfwTerminate();
 
@@ -178,7 +160,7 @@ _ev_window_setwidth(
     WindowHandle handle, 
     U32 width)
 {
-    U32 oldWidth, oldHeight;
+    I32 oldWidth, oldHeight;
     glfwGetWindowSize((GLFWwindow*)handle, &oldWidth, &oldHeight);
     glfwSetWindowSize((GLFWwindow*)handle, width, oldHeight);
 }
@@ -188,7 +170,7 @@ _ev_window_setheight(
     WindowHandle handle, 
     U32 height)
 {
-    U32 oldWidth, oldHeight;
+    I32 oldWidth, oldHeight;
     glfwGetWindowSize((GLFWwindow*)handle, &oldWidth, &oldHeight);
     glfwSetWindowSize((GLFWwindow*)handle, oldWidth, height);
 }
@@ -205,8 +187,8 @@ _ev_window_setsize(
 EVMODAPI void 
 _ev_window_getsize(
     WindowHandle handle, 
-    U32 *width, 
-    U32 *height)
+    I32 *width, 
+    I32 *height)
 {
     glfwGetWindowSize((GLFWwindow*)handle, width, height);
 }
@@ -217,7 +199,7 @@ _ev_window_destroy(
 {
   if (handle) {
     glfwDestroyWindow((GLFWwindow*)handle);
-    for(int i = 0; i < vec_len(WindowData.windows); i++) {
+    for(size_t i = 0; i < vec_len(WindowData.windows); i++) {
       if(WindowData.windows[i] == handle) {
         WindowData.windows[i] = NULL;
         break;
@@ -254,7 +236,7 @@ _ev_dbgwindow_create(
   glfwMakeContextCurrent(dbgWindowHandle);
   gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
 
-  vec_push(&WindowData.dbg_windows, &dbgWindowHandle);
+  vec_push((vec_t*)&WindowData.dbg_windows, &dbgWindowHandle);
   __ev_initialize_eventcallbacks(dbgWindowHandle);
   return dbgWindowHandle;
 }
@@ -267,7 +249,7 @@ _ev_dbgwindow_destroy(
     return;
   }
 
-  for(int i = 0; i < vec_len(WindowData.dbg_windows); i++) {
+  for(size_t i = 0; i < vec_len(WindowData.dbg_windows); i++) {
     if(WindowData.dbg_windows[i] == handle) {
       glfwDestroyWindow((GLFWwindow*)handle);
       WindowData.dbg_windows[i] = NULL;
@@ -308,30 +290,6 @@ _ev_dbgwindow_update(
     _ev_dbgwindow_destroy(handle);
     return 1;
   }
-}
-
-EVMODAPI bool
-_ev_input_getkeydown(
-    KeyCode key)
-{
-  int state = glfwGetKey(InputData.activeWindow, key);
-  return state == GLFW_PRESS || state == GLFW_REPEAT;
-}
-
-EVMODAPI bool
-_ev_input_getkeyup(
-    KeyCode key)
-{
-  int state = glfwGetKey(InputData.activeWindow, key);
-  return state == GLFW_RELEASE;
-}
-
-EVMODAPI void
-_ev_input_setactivewindow(
-    WindowHandle handle)
-{
-  // TODO add checking for valid window
-  InputData.activeWindow = handle;
 }
 
 EVMODAPI VkResult
@@ -382,52 +340,5 @@ EV_BINDINGS
   EV_NS_BIND_FN(imGL, setViewport      , _ev_imgl_setviewport     );
 
   // Input namespace bindings
-  EV_NS_BIND_FN(Input, setActiveWindow, _ev_input_setactivewindow);
-  EV_NS_BIND_FN(Input, getKeyDown     , _ev_input_getkeydown);
-  EV_NS_BIND_FN(Input, getKeyUp       , _ev_input_getkeyup);
-}
-
-void
-_ev_input_getkeydown_wrapper(
-    bool *out,
-    KeyCode *key)
-{
-  *out = _ev_input_getkeydown(*key);
-}
-
-void
-_ev_input_getkeyup_wrapper(
-    bool *out,
-    KeyCode *key)
-{
-  *out = _ev_input_getkeyup(*key);
-}
-
-void
-ev_input_lockcursor()
-{
-  glfwSetInputMode(InputData.activeWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-}
-
-void
-ev_input_unlockcursor()
-{
-  glfwSetInputMode(InputData.activeWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-}
-
-void
-ev_inputmod_scriptapi_loader(
-    ScriptContextHandle ctx_h)
-{
-  ScriptType keyCodeSType = ScriptInterface->addType(ctx_h, "unsigned int", sizeof(KeyCode));
-  ScriptType boolSType = ScriptInterface->getType(ctx_h, "bool");
-  ScriptType voidSType = ScriptInterface->getType(ctx_h, "void");
-
-  ScriptInterface->addFunction(ctx_h, _ev_input_getkeydown_wrapper, "ev_input_getkeydown", boolSType, 1, &keyCodeSType);
-  ScriptInterface->addFunction(ctx_h, _ev_input_getkeyup_wrapper, "ev_input_getkeyup", boolSType, 1, &keyCodeSType);
-
-  ScriptInterface->addFunction(ctx_h, ev_input_lockcursor, "ev_input_lockcursor", voidSType, 0, NULL);
-  ScriptInterface->addFunction(ctx_h, ev_input_unlockcursor, "ev_input_unlockcursor", voidSType, 0, NULL);
-
-  ScriptInterface->loadAPI(ctx_h, "subprojects/evmod_glfw/script_api.lua");
+  INPUT_BINDINGS();
 }

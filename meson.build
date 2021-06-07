@@ -18,6 +18,9 @@ mod_src = [
   'src/mod.c',
   'src/ev_imgl.c',
 
+  'src/input/mod_input.c',
+  'src/input/script_api/script_api.c',
+
   'extern/src/glad/glad.c',
 ]
 
@@ -46,4 +49,4 @@ mod_dep = declare_dependency(
 
 meson.override_dependency('evmod_glfw', mod_dep)
 
-configure_file(input: 'src/lua/script_api.lua', output: 'script_api.lua', copy:true)
+configure_file(input: 'src/input/script_api/script_api.lua', output: 'script_api.lua', copy:true)
