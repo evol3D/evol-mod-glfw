@@ -3,6 +3,7 @@
 TYPE(WindowHandle, PTR)
 
 TYPE(KeyCode, U32)
+TYPE(MouseButtonID, U32)
 
 TYPE(GenericKeyEvent, struct { KeyCode keyCode; I32 mods; })
 TYPE(MousePosition, struct { F64 x; F64 y; })

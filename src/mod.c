@@ -96,6 +96,28 @@ __ev_cursormove_eventdispatch_callback(
   });
 }
 
+void 
+__ev_mousebutton_eventdispatch_callback(
+    GLFWwindow* window,
+    int button,
+    int action,
+    int mods)
+{
+  EV_UNUSED_PARAMS(mods);
+
+  switch (action) {
+    case GLFW_PRESS:
+      DISPATCH_EVENT(MouseButtonPressedEvent, {.handle = (WindowHandle) window, .buttonId = button});
+      break;
+    case GLFW_RELEASE:
+      DISPATCH_EVENT(MouseButtonReleasedEvent, {.handle = (WindowHandle) window, .buttonId = button});
+      break;
+    case GLFW_REPEAT:
+    default:
+      break;
+  }
+}
+
 void
 __ev_initialize_eventcallbacks(
     WindowHandle handle)
@@ -103,6 +125,7 @@ __ev_initialize_eventcallbacks(
   glfwSetWindowSizeCallback(handle, __ev_windowresize_eventdispatch_callback);
   glfwSetKeyCallback(handle, __ev_key_eventdispatch_callback);
   glfwSetCursorPosCallback(handle, __ev_cursormove_eventdispatch_callback);
+  glfwSetMouseButtonCallback(handle, __ev_mousebutton_eventdispatch_callback);
 }
 
 EVMODAPI WindowHandle 

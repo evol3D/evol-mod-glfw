@@ -121,6 +121,22 @@ Input.getKeyJustReleased = function(keyCode)
   return C('ev_input_getkeyjustreleased', keyCode) == true
 end
 
+Input.getMouseButtonDown = function(buttonID)
+  return C('ev_input_getmousebuttondown', buttonID) == true
+end
+
+Input.getMouseButtonUp = function(buttonID)
+  return C('ev_input_getmousebuttonup', buttonID) == true
+end
+
+Input.getMouseButtonJustPressed = function(buttonID)
+  return C('ev_input_getmousebuttonjustpressed', buttonID) == true
+end
+
+Input.getMouseButtonJustReleased = function(buttonID)
+  return C('ev_input_getmousebuttonjustreleased', buttonID) == true
+end
+
 Input.lockCursor = function()
   C('ev_input_lockcursor')
 end

@@ -14,6 +14,22 @@ ev_input_setactivewindow(
     WindowHandle handle);
 
 EVMODAPI bool
+ev_input_getmousebuttonup(
+    MouseButtonID button);
+
+EVMODAPI bool
+ev_input_getmousebuttondown(
+    MouseButtonID button);
+
+EVMODAPI bool
+ev_input_getmousebuttonjustreleased(
+    MouseButtonID button);
+
+EVMODAPI bool
+ev_input_getmousebuttonjustpressed(
+    MouseButtonID button);
+
+EVMODAPI bool
 ev_input_getkeyup(
     KeyCode key);
 
