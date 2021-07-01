@@ -154,6 +154,12 @@ EVMODAPI U32
 _ev_window_update(
     WindowHandle handle)
 {
+  static double old_time = 0;
+  double new_time = glfwGetTime();
+  double deltaTime = new_time - old_time;
+  double FPS = 1.0 / deltaTime;
+  ev_log_debug("FPS: %f", FPS);
+  old_time = new_time;
   ev_input_update();
   U32 res = 0;
   if(!glfwWindowShouldClose(handle)) {
